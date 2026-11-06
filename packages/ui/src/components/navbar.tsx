@@ -86,14 +86,14 @@ function SiteNavbar({ className, ...props }: React.ComponentProps<"header">) {
           <Button
             variant="ghost"
             nativeButton={false}
-            render={<Link href="/login" />}
+            render={<Link href="/sign-in" />}
             className="rounded-full px-4 text-sm font-semibold"
           >
             Sign In
           </Button>
           <Button
             nativeButton={false}
-            render={<Link href="/register" />}
+            render={<Link href="/sign-up" />}
             size="lg"
             className="rounded-full px-5 text-sm font-medium"
           >
@@ -162,7 +162,7 @@ function SiteNavbar({ className, ...props }: React.ComponentProps<"header">) {
                 nativeButton={false}
                 size="lg"
                 className="rounded-full"
-                render={<Link href="/login" />}
+                render={<Link href="/sign-in" />}
                 onClick={closeSheet}
               >
                 Sign In
@@ -171,7 +171,7 @@ function SiteNavbar({ className, ...props }: React.ComponentProps<"header">) {
                 nativeButton={false}
                 size="lg"
                 className="rounded-full"
-                render={<Link href="/register" />}
+                render={<Link href="/sign-up" />}
                 onClick={closeSheet}
               >
                 Get Started
