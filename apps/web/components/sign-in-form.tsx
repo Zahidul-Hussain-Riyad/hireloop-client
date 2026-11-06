@@ -3,21 +3,27 @@
 import * as React from "react"
 import Link from "next/link"
 
+import {
+  useFormSubmit,
+  type AuthFormProps,
+  type authFormData,
+} from "@/components/auth-form"
+
 import { Button } from "@workspace/ui/components/button"
 import { Checkbox } from "@workspace/ui/components/checkbox"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 
-function SignInForm() {
-  const [rememberMe, setRememberMe] = React.useState(false)
+function SignInForm({ onSubmit }: { onSubmit?: AuthFormProps<authFormData>["onSubmit"] }) {
+  const [rememberMe, setRememberMe] = React.useState(true)
+  const { submitting, error, submit } = useFormSubmit(onSubmit)
 
-  // Placeholder handler — swap for better-auth signIn integration later.
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    const data = Object.fromEntries(new FormData(event.currentTarget))
-    // eslint-disable-next-line no-console
-    console.log("sign-in form data:", { ...data, rememberMe })
+    const data = Object.fromEntries(new FormData(event.currentTarget)) as {
+      email: string
+      password: string
+    }
+    return submit(event, { ...data, rememberMe })
   }
 
   return (
@@ -59,7 +65,7 @@ function SignInForm() {
             id="password"
             name="password"
             type="password"
-            placeholder="Your Password"
+            placeholder="••••••••"
             autoComplete="current-password"
             required
             className="h-11 rounded-lg"
@@ -81,8 +87,19 @@ function SignInForm() {
           </label>
         </div>
 
-        <Button type="submit" size="lg" className="mt-1 h-11 w-full rounded-lg text-sm font-medium">
-          Sign In
+        {error && (
+          <p role="alert" className="text-destructive text-sm">
+            {error}
+          </p>
+        )}
+
+        <Button
+          type="submit"
+          size="lg"
+          disabled={submitting}
+          className="mt-1 h-11 w-full rounded-lg text-sm font-medium"
+        >
+          {submitting ? "Signing in…" : "Sign In"}
         </Button>
       </form>
 

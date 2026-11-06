@@ -2,22 +2,47 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { Briefcase, ShieldCheck, User } from "lucide-react"
+
+import { cn } from "@workspace/ui/lib/utils"
+
+import {
+  useFormSubmit,
+  type AuthFormProps,
+  type authFormData,
+} from "@/components/auth-form"
 
 import { Button } from "@workspace/ui/components/button"
 import { Checkbox } from "@workspace/ui/components/checkbox"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 
-function SignUpForm() {
+const ROLES = [
+  { value: "seeker", label: "Job Seeker", icon: User },
+  { value: "recruiter", label: "Recruiter", icon: Briefcase },
+  { value: "admin", label: "Admin", icon: ShieldCheck },
+] as const
+
+type Role = (typeof ROLES)[number]["value"]
+
+function SignUpForm({ onSubmit }: { onSubmit?: AuthFormProps<authFormData>["onSubmit"] }) {
+  const [role, setRole] = React.useState<Role>("seeker")
   const [agreeToTerms, setAgreeToTerms] = React.useState(false)
+  const { submitting, error, submit } = useFormSubmit(onSubmit)
 
-  // Placeholder handler — swap for better-auth signUp integration later.
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    if (!agreeToTerms) {
+      event.preventDefault()
+      return
+    }
 
-    const data = Object.fromEntries(new FormData(event.currentTarget))
-    // eslint-disable-next-line no-console
-    console.log("sign-up form data:", { ...data, agreeToTerms })
+    const data = Object.fromEntries(new FormData(event.currentTarget)) as {
+      name: string
+      email: string
+      password: string
+    }
+
+    return submit(event, { ...data, role })
   }
 
   return (
@@ -32,6 +57,44 @@ function SignUpForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+        <fieldset className="flex flex-col gap-2">
+          {/* <legend className="text-foreground text-sm leading-none font-medium">
+            I am a
+          </legend> */}
+          <div
+            role="radiogroup"
+            aria-label="Account type"
+            className="grid grid-cols-3 gap-2"
+          >
+            {ROLES.map((option) => {
+              const Icon = option.icon
+              const selected = role === option.value
+              return (
+                <label
+                  key={option.value}
+                  className={cn(
+                    "flex cursor-pointer flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-center text-xs leading-none transition-colors outline-none focus-within:ring-3 focus-within:ring-ring/50",
+                    selected
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="role"
+                    value={option.value}
+                    checked={selected}
+                    onChange={() => setRole(option.value)}
+                    className="sr-only"
+                  />
+                  <Icon className={cn("size-4", selected && "text-primary")} />
+                  {option.label}
+                </label>
+              )
+            })}
+          </div>
+        </fieldset>
+
         <div className="flex flex-col gap-2">
           <Label htmlFor="name">Full name</Label>
           <Input
@@ -64,7 +127,7 @@ function SignUpForm() {
             id="password"
             name="password"
             type="password"
-            placeholder="Your Password"
+            placeholder="••••••••"
             autoComplete="new-password"
             minLength={8}
             required
@@ -80,6 +143,7 @@ function SignUpForm() {
             id="agree-terms"
             checked={agreeToTerms}
             onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
+            aria-invalid={!agreeToTerms}
             className="size-4.5 rounded-md"
           />
           <label
@@ -103,12 +167,19 @@ function SignUpForm() {
           </label>
         </div>
 
+        {error && (
+          <p role="alert" className="text-destructive text-sm">
+            {error}
+          </p>
+        )}
+
         <Button
           type="submit"
           size="lg"
+          disabled={submitting}
           className="mt-1 h-11 w-full rounded-lg text-sm font-medium"
         >
-          Create account
+          {submitting ? "Creating account…" : "Create account"}
         </Button>
       </form>
 
